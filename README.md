@@ -9,5 +9,6 @@ dwbackup provides a simple means to manage multiple duplicity backup set.
 Requirements
 ------------
 
+* Duplicity
 * Perl
 * Config::INI
