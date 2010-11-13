@@ -21,38 +21,47 @@ GetOptions(\%opt, 'config=s');
 
 my $config = Config::INI::Reader->read_file($opt{config});
 
+# Loop over each set.
 for my $set (keys %$config) {
 
     # The global namespace is "_", so skip it.
     next if $set eq '_';
 
+    # Make sure we have something to back up.
+    die "Error: No backup source provided for set $set.\n" unless defined($$config{$set}{source});
+
+    # Set environment variables for this set.
     setEnv($set);
 
-    wipeEnv();
+    # Make sure we have a destination for this set.
+    my $dest = $$config{$set}{dest} || $$config{_}{dest} . $set or
+        die "Error: No backup destination provided for set $set.\n";
 
-#    die "Error: No backup source provided for set $set.\n" unless defined($$config{$set}{source});
-#
-#    my $dest = $$config{$set}{dest} || $$config{_}{dest} . $set or
-#        die "Error: No backup destination provided for set $set.\n";
-#
-#    my $cmd = 'duplicity --name=' . $set;
-#
-#    if (defined($$config{_}{gpg_key})) {
-#        $cmd .= ' --encrypt-key=' . $$config{_}{gpg_key} . ' --sign-key=' . $$config{_}{gpg_key}
-#    }
-#
-#    if (defined($$config{$set}{exclude})) {
-#        my $exclude = '';
-#        for my $item (split /\s+/, $$config{$set}{exclude}) {
-#            $exclude .= ' --exclude ' . $item;
-#        }
-#        $cmd .= $exclude;
-#    }
-#
-#    $cmd .= ' ' . $$config{$set}{source} . ' ' . $dest;
-#
-#    #system($cmd);
-#    print "$cmd\n";
+    # Build the command line to run.
+    my $cmd = 'duplicity --name=' . $set;
+
+    if (defined($$config{_}{gpg_key})) {
+        $cmd .= ' --encrypt-key=' . $$config{_}{gpg_key} . ' --sign-key=' . $$config{_}{gpg_key}
+    }
+
+    if (defined($$config{$set}{exclude})) {
+        my $exclude = '';
+        for my $item (split /\s+/, $$config{$set}{exclude}) {
+            $exclude .= ' --exclude ' . $item;
+        }
+        $cmd .= $exclude;
+    }
+
+    if (defined($$config{$set}{options})) {
+        $cmd .= ' ' . $$config{$set}{options};
+    }
+        
+    $cmd .= ' ' . $$config{$set}{source} . ' ' . $dest;
+
+    system($cmd);
+
+    # Clear environment variables for this set.
+    wipeEnv();
 
 }
 
