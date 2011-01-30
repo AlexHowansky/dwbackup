@@ -42,6 +42,8 @@ for my $set (keys %$config) {
 
     if (defined($$config{_}{gpg_key})) {
         $cmd .= ' --encrypt-key=' . $$config{_}{gpg_key} . ' --sign-key=' . $$config{_}{gpg_key}
+    } else {
+        $cmd .= ' --no-encryption';
     }
 
     if (defined($$config{$set}{exclude})) {
