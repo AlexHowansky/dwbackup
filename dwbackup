@@ -10,7 +10,7 @@ use Config::INI::Reader;
 my @vars =qw(
     AWS_ACCESS_KEY_ID
     AWS_SECRET_ACCESS_KEY
-    PASSPHRASE
+    SIGN_PASSPHRASE
 );
 
 my %opt = (
