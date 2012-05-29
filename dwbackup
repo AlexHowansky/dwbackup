@@ -23,7 +23,7 @@ GetOptions(\%opt, 'config=s');
 my $config = Config::INI::Reader->read_file($opt{config});
 
 # Loop over each set.
-for my $set (keys %$config) {
+for my $set (@ARGV ? @ARGV : keys %$config) {
 
     # The global namespace is "_", so skip it.
     next if $set eq '_';
@@ -59,10 +59,8 @@ for my $set (keys %$config) {
         $cmd .= $exclude;
     }
 
-    if (defined($$config{$set}{options})) {
-        $cmd .= ' ' . $$config{$set}{options};
-    }
-        
+    $cmd .= ' ' . $$config{_}{options} if defined($$config{_}{options});
+    $cmd .= ' ' . $$config{$set}{options} if defined($$config{$set}{options});
     $cmd .= ' ' . $$config{$set}{source} . ' ' . $dest;
 
     system($cmd);
