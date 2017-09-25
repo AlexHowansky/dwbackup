@@ -39,18 +39,19 @@ for my $set (@ARGV ? @ARGV : keys %$config) {
         die "Error: No backup destination provided for set $set.\n";
 
     # Build the command line to run.
-    my $cmd = 'duplicity --name=' . $set;
+    my $baseCmd = 'duplicity --name=' . $set;
 
     if (defined($$config{_}{encrypt_key})) {
-        $cmd .= ' --encrypt-key=' . $$config{_}{encrypt_key};
+        $baseCmd .= ' --encrypt-key=' . $$config{_}{encrypt_key};
     } else {
-        $cmd .= ' --no-encryption';
+        $baseCmd .= ' --no-encryption';
     }
 
     if (defined($$config{_}{sign_key})) {
-        $cmd .= ' --sign-key=' . $$config{_}{sign_key};
+        $baseCmd .= ' --sign-key=' . $$config{_}{sign_key};
     }
 
+    my $cmd = $baseCmd;
     if (defined($$config{$set}{exclude})) {
         my $exclude = '';
         for my $item (split /\s+/, $$config{$set}{exclude}) {
@@ -64,6 +65,12 @@ for my $set (@ARGV ? @ARGV : keys %$config) {
     $cmd .= ' ' . $$config{$set}{source} . ' ' . $dest;
 
     system($cmd);
+
+    if (defined($$config{$set}{clean})) {
+        system($baseCmd . ' ' . $$config{$set}{clean} . ' --force ' . $dest);
+    } elsif (defined($$config{_}{clean})) {
+        system($baseCmd . ' ' . $$config{_}{clean} . ' --force ' . $dest);
+    }
 
     # Clear environment variables for this set.
     wipeEnv();
